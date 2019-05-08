@@ -499,7 +499,7 @@ public class ConfigPanel extends PluginPanel
 				}
 				catch (IllegalArgumentException ex)
 				{
-					log.debug("invalid seleced item", ex);
+					log.debug("invalid selected item", ex);
 				}
 				box.addItemListener(e ->
 				{

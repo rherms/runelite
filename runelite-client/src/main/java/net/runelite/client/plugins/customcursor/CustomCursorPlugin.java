@@ -37,7 +37,6 @@ import net.runelite.client.ui.ClientUI;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 @PluginDescriptor(
 	name = "Custom Cursor",
@@ -51,6 +50,9 @@ public class CustomCursorPlugin extends Plugin
 
 	@Inject
 	private CustomCursorConfig config;
+
+	@Inject
+	private ConfigManager configManager;
 
 	@Provides
 	CustomCursorConfig provideConfig(ConfigManager configManager)
@@ -77,38 +79,39 @@ public class CustomCursorPlugin extends Plugin
 		{
 			if (event.getKey().equals("cursorStyle"))
 			{
-				useSelectedCursor();
+				updateCursor();
 			}
 			else if (event.getKey().equals("customImage"))
 			{
-				updateCursor();
+				// When the custom image is set, automatically set the dropdown to use it
+				configManager.setConfiguration("customcursor", "cursorStyle", "CUSTOM_IMAGE");
 			}
 		}
 	}
 
 	private void updateCursor()
 	{
-		// Custom image file takes precedent
-		File customImageFile = config.customImageFile();
-		if (customImageFile != null && customImageFile.exists() && !customImageFile.isDirectory())
+		if (config.selectedCursor().equals(CustomCursor.CUSTOM_IMAGE))
 		{
-			try
+			File customImageFile = config.customImageFile();
+			if (customImageFile != null && customImageFile.exists() && !customImageFile.isDirectory())
 			{
-				BufferedImage image = ImageIO.read(customImageFile);
-				clientUI.setCursor(image, "Custom");
-			}
-			catch (Exception e)
-			{
-				useSelectedCursor();
+				try
+				{
+					BufferedImage image = ImageIO.read(customImageFile);
+					clientUI.setCursor(image, "Custom");
+					return;
+				}
+				catch (Exception e)
+				{
+					useProvidedCursor();
+				}
 			}
 		}
-		else
-		{
-			useSelectedCursor();
-		}
+		useProvidedCursor();
 	}
 
-	private void useSelectedCursor()
+	private void useProvidedCursor()
 	{
 		CustomCursor selectedCursor = config.selectedCursor();
 		clientUI.setCursor(selectedCursor.getCursorImage(), selectedCursor.toString());

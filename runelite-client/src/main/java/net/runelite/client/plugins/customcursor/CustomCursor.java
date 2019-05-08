@@ -34,7 +34,9 @@ public enum CustomCursor
 	RS3_SILVER("RS3 Silver", "cursor-rs3-silver.png"),
 	DRAGON_DAGGER("Dragon Dagger", "cursor-dragon-dagger.png"),
 	TROUT("Trout", "cursor-trout.png"),
-	DRAGON_SCIMITAR("Dragon Scimitar", "cursor-dragon-scimitar.png");
+	DRAGON_SCIMITAR("Dragon Scimitar", "cursor-dragon-scimitar.png"),
+	// will fall back to RS3_GOLD if anything goes wrong
+	CUSTOM_IMAGE("Custom Image", "cursor-rs3-gold.png");
 
 	private final String name;
 	@Getter

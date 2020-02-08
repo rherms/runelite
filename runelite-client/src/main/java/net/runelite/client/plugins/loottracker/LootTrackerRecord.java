@@ -32,10 +32,11 @@ class LootTrackerRecord
 	private final String title;
 	private final String subTitle;
 	private final LootTrackerItem[] items;
-	private final long timestamp;
+	private final int kills;
 
 	/**
 	 * Checks if this record matches specified id
+	 *
 	 * @param id other record id
 	 * @return true if match is made
 	 */

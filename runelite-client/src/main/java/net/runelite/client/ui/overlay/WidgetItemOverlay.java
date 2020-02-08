@@ -26,6 +26,7 @@ package net.runelite.client.ui.overlay;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +42,10 @@ import static net.runelite.api.widgets.WidgetID.EQUIPMENT_INVENTORY_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.GRAND_EXCHANGE_INVENTORY_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.GUIDE_PRICES_INVENTORY_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.INVENTORY_GROUP_ID;
+import static net.runelite.api.widgets.WidgetID.SEED_VAULT_INVENTORY_GROUP_ID;
 import static net.runelite.api.widgets.WidgetID.SHOP_INVENTORY_GROUP_ID;
+import static net.runelite.api.widgets.WidgetInfo.BANK_CONTENT_CONTAINER;
+import static net.runelite.api.widgets.WidgetInfo.BANK_TAB_CONTAINER;
 import static net.runelite.api.widgets.WidgetInfo.TO_GROUP;
 import net.runelite.api.widgets.WidgetItem;
 
@@ -67,15 +71,42 @@ public abstract class WidgetItemOverlay extends Overlay
 	public Dimension render(Graphics2D graphics)
 	{
 		final List<WidgetItem> itemWidgets = overlayManager.getItemWidgets();
+		final Rectangle originalClipBounds = graphics.getClipBounds();
+		Widget curClipParent = null;
 		for (WidgetItem widgetItem : itemWidgets)
 		{
 			Widget widget = widgetItem.getWidget();
 			int interfaceGroup = TO_GROUP(widget.getId());
 
-			// Don't draw if this widget isn't one of the allowed
-			if (!interfaceGroups.contains(interfaceGroup))
+			// Don't draw if this widget isn't one of the allowed nor in tag tab/item tab
+			if (!interfaceGroups.contains(interfaceGroup) ||
+				(interfaceGroup == BANK_GROUP_ID
+					&& (widget.getParentId() == BANK_CONTENT_CONTAINER.getId() || widget.getParentId() == BANK_TAB_CONTAINER.getId())))
 			{
 				continue;
+			}
+
+			Widget parent = widget.getParent();
+			Rectangle parentBounds = parent.getBounds();
+			Rectangle itemCanvasBounds = widgetItem.getCanvasBounds();
+
+			boolean shouldClip;
+			shouldClip = itemCanvasBounds.y < parentBounds.y && itemCanvasBounds.y + itemCanvasBounds.height >= parentBounds.y;
+			shouldClip |= itemCanvasBounds.y < parentBounds.y + parentBounds.height && itemCanvasBounds.y + itemCanvasBounds.height >= parentBounds.y + parentBounds.height;
+			shouldClip |= itemCanvasBounds.x < parentBounds.x && (itemCanvasBounds.x + itemCanvasBounds.width) >= parentBounds.x;
+			shouldClip |= itemCanvasBounds.x < parentBounds.x + parentBounds.width && itemCanvasBounds.x + itemCanvasBounds.width >= parentBounds.x + parentBounds.width;
+			if (shouldClip)
+			{
+				if (curClipParent != parent)
+				{
+					graphics.setClip(parentBounds);
+					curClipParent = parent;
+				}
+			}
+			else if (curClipParent != null && curClipParent != parent)
+			{
+				graphics.setClip(originalClipBounds);
+				curClipParent = null;
 			}
 
 			renderItemOverlay(graphics, widgetItem.getId(), widgetItem);
@@ -92,7 +123,8 @@ public abstract class WidgetItemOverlay extends Overlay
 			GRAND_EXCHANGE_INVENTORY_GROUP_ID,
 			GUIDE_PRICES_INVENTORY_GROUP_ID,
 			EQUIPMENT_INVENTORY_GROUP_ID,
-			INVENTORY_GROUP_ID);
+			INVENTORY_GROUP_ID,
+			SEED_VAULT_INVENTORY_GROUP_ID);
 	}
 
 	protected void showOnBank()

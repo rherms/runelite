@@ -47,7 +47,7 @@ public interface CustomCursorConfig extends Config
 	@ConfigItem(
 		keyName = "customImage",
 		name = "Custom Image",
-		description = "Use your own image file for a cursor"
+		description = "Use your own image file for a cursor. Select \"Custom Image\" above."
 	)
 	@Nullable
 	default File customImageFile()

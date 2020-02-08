@@ -453,15 +453,17 @@ class ConfigPanel extends PluginPanel
 					int returnValue = fileChooser.showOpenDialog(null);
 					if (returnValue == JFileChooser.APPROVE_OPTION)
 					{
-						changeConfiguration(listItem, config, fileChooser, cd, cid);
+						changeConfiguration(fileChooser, cd, cid);
 						chooserButton.setText(fileChooser.getSelectedFile().getName());
+						chooserButton.setToolTipText(fileChooser.getSelectedFile().getAbsolutePath());
 					}
 				});
 				String currentFilePath = configManager.getConfiguration(cd.getGroup().value(), cid.getItem().keyName());
-				String fileName = currentFilePath.substring(currentFilePath.lastIndexOf("\\") + 1);
-				if (!fileName.isEmpty())
+				if (!Strings.isNullOrEmpty(currentFilePath))
 				{
+					String fileName = currentFilePath.substring(currentFilePath.lastIndexOf("\\") + 1);
 					chooserButton.setText(fileName);
+					chooserButton.setToolTipText(currentFilePath);
 				}
 				item.add(chooserButton, BorderLayout.EAST);
 			}

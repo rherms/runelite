@@ -34,9 +34,12 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 @PluginDescriptor(
 	name = "Custom Cursor",
@@ -45,6 +48,8 @@ import java.io.File;
 )
 public class CustomCursorPlugin extends Plugin
 {
+	private static final Logger logger = LoggerFactory.getLogger(CustomCursorPlugin.class);
+
 	@Inject
 	private ClientUI clientUI;
 
@@ -83,8 +88,21 @@ public class CustomCursorPlugin extends Plugin
 			}
 			else if (event.getKey().equals("customImage"))
 			{
-				// When the custom image is set, automatically set the dropdown to use it
-				configManager.setConfiguration("customcursor", "cursorStyle", "CUSTOM_IMAGE");
+				// Don't do anything on Reset of config
+				if (!event.getNewValue().isEmpty())
+				{
+
+					if (configManager.getConfiguration("customcursor", "cursorStyle").equals("CUSTOM_IMAGE"))
+					{
+						// If custom image was already selected, update the cursor with the new file
+						updateCursor();
+					}
+					else
+					{
+						// When the custom image is set, automatically set the dropdown to use it
+						configManager.setConfiguration("customcursor", "cursorStyle", "CUSTOM_IMAGE");
+					}
+				}
 			}
 		}
 	}
@@ -102,9 +120,9 @@ public class CustomCursorPlugin extends Plugin
 					clientUI.setCursor(image, "Custom");
 					return;
 				}
-				catch (Exception e)
+				catch (IOException e)
 				{
-					useProvidedCursor();
+					logger.debug("unable to load custom cursor file", e);
 				}
 			}
 		}
